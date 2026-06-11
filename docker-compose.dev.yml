@@ -1,0 +1,23 @@
+version: '3.8'
+
+# Compose só para desenvolvimento: sobe apenas o PostgreSQL.
+# O backend roda fora do Docker (npm run start:dev) para ter hot-reload.
+#
+# Uso: docker compose -f docker-compose.dev.yml up -d
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: si_postgres_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: lbonan
+      POSTGRES_DB: si_backend
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_dev_data:

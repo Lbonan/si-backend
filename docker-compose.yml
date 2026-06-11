@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # ── Banco de dados PostgreSQL ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: si_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: lbonan
+      POSTGRES_DB: si_imobiliaria
+    ports:
+      # host:container — expõe na porta 5432 da sua máquina
+      - '5432:5432'
+    volumes:
+      # Volume nomeado: os dados do banco persistem mesmo se o container for removido
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Backend NestJS ─────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: si_backend
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DB_HOST: postgres # nome do serviço acima — Docker resolve internamente
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: lbonan
+      DB_NAME: si_backend
+      JWT_SECRET: ${JWT_SECRET:-troque_em_producao_por_segredo_forte}
+      JWT_EXPIRES_IN: 7d
+      AI_SERVICE_URL: ${AI_SERVICE_URL:-http://ai-service:8000}
+    depends_on:
+      postgres:
+        # Só sobe o backend depois do banco estar saudável (healthcheck verde)
+        condition: service_healthy
+
+volumes:
+  postgres_data:
