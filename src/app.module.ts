@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { LeadsModule } from './leads/leads.module';
-
 @Module({
   imports: [
     // ConfigModule: carrega o .env e disponibiliza via ConfigService em todo o app.
